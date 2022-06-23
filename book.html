@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <script src="jquery-3.5.1.min.js"></script>
+    <script>
+        $(
+            ()=>{
+                function getbookonbookid(bookid){
+                    for (let i=0;i<books.length;i++){
+                        if (books[i].bbokid == bookid){
+                            output.booksfromid = true;
+                            output.bookdetails = books[i];
+                            break;
+                        }
+                    }
+                  return output;
+                }
+                function updatebook(updateObject){
+                    let updated = false;
+                    for (let i=0;i<books.length;i++){
+                        if(books[i].bookid == updateObject.bookid){
+                          books[i].price == updateObject.price;
+                          books[i].bookname == updateObject.bookname;
+                          updated = true;
+                          break;
+                        }   
+                     }
+                     return updated;
+                }
+            function showContents() {
+                let ajaxparams = {
+                    data: {},
+                    url: "http://localhost:8081/getallbooks",
+                    type : 'get',
+                    dataType: "json",
+                    success: (dgbs) => {
+                        books = dgbs;
+                         
+                        let bookcontents =" ";
+                        for (let i=0; i<books.length;i++){
+                            bookcontents += "<br/>" + books[i].bookid + "  "+ books[i].bookname +"  "+ books[i].price;
+                        }
+                        $("#contents").html(bookcontents);
+                    },
+                    error: (error)=> {console.log("Failure"+error)}
+                };
+                $.ajax(ajaxparams);
+            }    
+
+            $("#bookno").blur(() => {
+
+                let y = $("#bookno").val();
+
+                document.querySelector("#bookno").disabled = true;
+
+                let ajaxparams = {
+                    data: { x : y},
+                    url: "http://localhost:8081/getbooks",
+                    type: 'get',
+                    dataType: "json",
+                    success: (output) =>{
+                        if(output.booksfromid){
+                            $("#message").text("bookid not found");
+
+                            $("#bookname").val(output.bookdetails.bookname);
+
+                            document.querySelector("#bookname").value = output.bookdetails.bookname;
+
+                            $("#bookprice").val(output.bookdetails.price);
+                        }
+
+                        else{
+                            $("#message").text("book details not found");
+                            $("#bookname").val(" ");
+                            $("#bookprice").val(" ");
+                        }
+                    },
+                    error: (error)=> {console.log("Failure"+error)}
+                };
+                $.ajax(ajaxparams);
+            });
+
+            $("#update").click(() =>{
+                let input = {
+                    bookid: $("#bookno").val(),
+                    bookname: $("#bookname").val(),
+                    price: $("#bookprice").val()
+                };
+                let ajaxparams = {
+                    data: input,
+                    url: "http://localhost:8081/updatebooks",
+                    type: 'get',
+                    dataType: "json",
+                    success: (output) =>{
+                        if(output){
+                            $("#message").text("update successfully");
+                        }
+                        else{
+                            $("#message").text("books are updated"); 
+                        }
+                        $("#bookname").val(" ");
+                        $("#bookprice").val(" "); 
+
+                        showContents();
+
+                        document.querySelector("#bookno").disabled = false;
+                        document.querySelector("#bookno").focus;
+                    },
+                    error: (misteke)=> {console.log("error" +mistake);}
+                };
+                $.ajax(ajaxparams);
+            });
+            showContents();
+
+            });
+    </script>
+</head>
+<body>
+    <input type="text" id="bookno" placeholder="book number"/>
+    <span id="#message">Book Library</span>
+    <br/>
+    <input type="text" id="bookname" placeholder="book name"/>
+    <br/>
+    <input type="text" id="bookprice" placeholder="book price"/>
+
+    <button id="update">Update Book</button>
+    <hr/>
+    <p id="contents">All Books show here</p>
+</body>
+</html>
